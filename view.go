@@ -9,6 +9,7 @@ import (
 
 type View struct {
 	screen tcell.Screen
+	grid   *Grid
 }
 
 func NewView() *View {
@@ -27,7 +28,8 @@ func NewView() *View {
 	s.EnablePaste()
 	s.Clear()
 
-	v := View{s}
+	g := NewGrid()
+	v := View{s, g}
 	return &v
 }
 
@@ -55,7 +57,7 @@ func (v *View) drawText(x1, y1, x2, y2 int, style tcell.Style, text string) {
 	}
 }
 
-func (v *View) drawBox(x1, y1, x2, y2 int, text string) {
+func (v *View) drawBox(x1, y1, x2, y2 int) {
 	style := tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(tcell.ColorPurple)
 	if y2 < y1 {
 		y1, y2 = y2, y1
@@ -88,12 +90,34 @@ func (v *View) drawBox(x1, y1, x2, y2 int, text string) {
 		v.screen.SetContent(x1, y2, tcell.RuneLLCorner, nil, style)
 		v.screen.SetContent(x2, y2, tcell.RuneLRCorner, nil, style)
 	}
-
-	v.drawText(x1+1, y1+1, x2-1, y2-1, style, text)
 }
 
 func (v *View) drawCell(x, y int) {
+	if x < GridMaxCols*2 && y < GridMaxRows {
+		// round to nearest even value, then scale down to grid size
+		x2 := (x - (x % 2)) / 2
+		g := *v.grid
+		g[x2][y] = GridCellAlive
+	}
+}
+
+func (v *View) render() {
 	style := tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(tcell.ColorReset)
-	v.screen.SetContent(x, y, tcell.RuneBlock, nil, style)
-	v.screen.SetContent(x+1, y, tcell.RuneBlock, nil, style)
+	// draw outer box
+	v.drawBox(0, 0, GridMaxCols*2, GridMaxRows)
+	// render grid within outer box
+	g := *v.grid
+	for i := 0; i < len(g); i++ {
+		col := g[i]
+		for j := 0; j < len(col); j++ {
+			if g[i][j] == GridCellAlive {
+				// screen needs 2 cells per column
+				// offset of one column and one row into the screen
+				x := i * 2
+				y := j
+				v.screen.SetContent(x, y, tcell.RuneBlock, nil, style)
+				v.screen.SetContent(x+1, y, tcell.RuneBlock, nil, style)
+			}
+		}
+	}
 }

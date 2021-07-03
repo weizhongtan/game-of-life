@@ -7,12 +7,12 @@ import (
 func main() {
 	view := NewView()
 
-	// Draw initial boxes
-	view.drawBox(5, 9, 32, 14, "Press C to reset")
-
 	// Event loop
 	buttonDown := false
 	for {
+		// convert grid into setContent calls
+		view.render()
+
 		// Update screen
 		view.screen.Show()
 
@@ -37,7 +37,7 @@ func main() {
 			// Only process button events, not wheel events
 			button &= tcell.ButtonMask(0xff)
 
-			switch ev.Buttons() {
+			switch button {
 			case tcell.ButtonNone:
 				if buttonDown {
 					view.drawCell(x, y)
