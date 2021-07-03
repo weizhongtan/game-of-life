@@ -10,6 +10,10 @@ type Controller struct {
 func (c *Controller) processInput() {
 	view := c.view
 
+	if !view.screen.HasPendingEvent() {
+		return
+	}
+
 	// Poll event
 	ev := view.screen.PollEvent()
 
