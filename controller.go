@@ -24,6 +24,8 @@ func (c *Controller) processInput() {
 			view.screen.Sync()
 		} else if ev.Rune() == 'C' || ev.Rune() == 'c' {
 			view.screen.Clear()
+		} else if ev.Rune() == 'R' || ev.Rune() == 'r' {
+			c.view.running = true
 		}
 	case *tcell.EventMouse:
 		x, y := ev.Position()
@@ -34,7 +36,8 @@ func (c *Controller) processInput() {
 		switch button {
 		case tcell.ButtonNone:
 			if c.buttonDown {
-				view.drawCell(x, y)
+				// offset to account for borders
+				view.drawCell(x-1, y-1)
 				c.buttonDown = false
 			}
 		default:

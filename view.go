@@ -8,8 +8,9 @@ import (
 )
 
 type View struct {
-	screen tcell.Screen
-	grid   *Grid
+	screen  tcell.Screen
+	grid    *Grid
+	running bool
 }
 
 func NewView() *View {
@@ -29,7 +30,7 @@ func NewView() *View {
 	s.Clear()
 
 	g := NewGrid()
-	v := View{s, g}
+	v := View{s, g, false}
 	return &v
 }
 
@@ -97,13 +98,15 @@ func (v *View) drawCell(x, y int) {
 }
 
 func (v *View) update() {
-
+	if v.running {
+		(*v.grid)[0][0] = GridCellDead
+	}
 }
 
 func (v *View) render() {
 	style := tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(tcell.ColorReset)
 	// draw outer box
-	v.drawBox(0, 0, GridMaxCols*2, GridMaxRows)
+	v.drawBox(0, 0, GridMaxCols*2+1, GridMaxRows+1)
 	// render grid within outer box
 	g := *v.grid
 	for i := 0; i < len(g); i++ {
@@ -112,8 +115,8 @@ func (v *View) render() {
 			if g[i][j] == GridCellAlive {
 				// screen needs 2 cells per column
 				// offset of one column and one row into the screen
-				x := i * 2
-				y := j
+				x := 1 + i*2
+				y := 1 + j
 				v.screen.SetContent(x, y, tcell.RuneBlock, nil, style)
 				v.screen.SetContent(x+1, y, tcell.RuneBlock, nil, style)
 			}
