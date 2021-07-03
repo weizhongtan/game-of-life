@@ -12,7 +12,7 @@ func main() {
 
 	refreshRate, err := time.ParseDuration(fmt.Sprintf("%vms", 1000.0/30))
 	if err != nil {
-		log.Fatalln("could not parse refreshRate")
+		log.Fatal("could not parse refreshRate")
 	}
 
 	for {

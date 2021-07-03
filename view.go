@@ -15,8 +15,6 @@ type View struct {
 }
 
 func NewView() *View {
-	defStyle := tcell.StyleDefault.Background(tcell.ColorReset).Foreground(tcell.ColorReset)
-
 	// Initialize screen
 	s, err := tcell.NewScreen()
 	if err != nil {
@@ -25,12 +23,20 @@ func NewView() *View {
 	if err := s.Init(); err != nil {
 		log.Fatalf("%+v", err)
 	}
+
+	defStyle := tcell.StyleDefault.Background(tcell.ColorReset).Foreground(tcell.ColorReset)
 	s.SetStyle(defStyle)
 	s.EnableMouse()
 	s.EnablePaste()
 	s.Clear()
 
-	g := NewGrid()
+	// adjust for screen size
+	// width - box left + right borders
+	// height - box top + bottom borders + controls UI
+	sw, sh := s.Size()
+	w, h := (sw/2)-1, sh-(2+3)
+
+	g := NewGrid(w, h)
 	v := View{s, g, false}
 	return &v
 }
@@ -61,14 +67,14 @@ func (v *View) drawText(x1, y1, x2, y2 int, text string) {
 }
 
 func (v *View) drawTextLine(line int, text string) {
-	w := (GridMaxCols * 2) + 2
+	w := (v.grid.width() * 2) + 2
 	// %-*s explained:
 	// "-" right justify
 	// "*" pass width in
 	v.drawText(0, line, w, line+1, fmt.Sprintf("%-*s", w, text))
 }
 
-func (v *View) drawBox(x1, y1, x2, y2 int) {
+func (v *View) drawBox(x1, y1, x2, y2 int, color tcell.Color) {
 	if y2 < y1 {
 		y1, y2 = y2, y1
 	}
@@ -92,7 +98,7 @@ func (v *View) drawBox(x1, y1, x2, y2 int) {
 		}
 	}
 
-	style = tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(tcell.ColorReset)
+	style = tcell.StyleDefault.Foreground(color).Background(tcell.ColorReset)
 
 	// Draw borders
 	for col := x1; col <= x2; col++ {
@@ -132,7 +138,7 @@ func (v *View) update() {
 		g := *v.grid
 
 		// nb represents the number of neighbors for each position in the grid
-		nb := *NewGrid()
+		nb := *NewGrid(g.width(), g.height())
 
 		// count the neighbors for each position in the grid
 		for i := 0; i < len(g); i++ {
@@ -142,7 +148,7 @@ func (v *View) update() {
 				for a := i - 1; a <= i+1; a++ {
 					for b := j - 1; b <= j+1; b++ {
 						// wrap around the matrix
-						aWrap, bWrap := wrap(a, 0, GridMaxCols-1), wrap(b, 0, GridMaxCols-1)
+						aWrap, bWrap := wrap(a, 0, g.width()-1), wrap(b, 0, g.height()-1)
 						if g[aWrap][bWrap] == GridCellAlive {
 							count++
 						}
@@ -173,8 +179,16 @@ func (v *View) update() {
 
 func (v *View) render() {
 	style := tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(tcell.ColorReset)
+
 	// draw outer box
-	v.drawBox(0, 0, GridMaxCols*2+1, GridMaxRows+1)
+	var color tcell.Color
+	if v.running {
+		color = tcell.ColorGreen
+	} else {
+		color = tcell.ColorWhite
+	}
+	v.drawBox(0, 0, v.grid.width()*2+1, v.grid.height()+1, color)
+
 	// render grid within outer box
 	g := *v.grid
 	for i := 0; i < len(g); i++ {
@@ -198,12 +212,12 @@ func (v *View) render() {
 		toggleMsg = "run"
 	}
 	lines := []string{
-		"[left click] add cell",
-		fmt.Sprintf("[r]          %s simulation", toggleMsg),
+		"[left click] toggle cell",
+		fmt.Sprintf("[space]      %s simulation", toggleMsg),
 		"[esc]        exit",
 	}
 	for i, msg := range lines {
-		v.drawTextLine(GridMaxRows+2+i, msg)
+		v.drawTextLine(g.height()+2+i, msg)
 	}
 	// Update screen
 	v.screen.Show()

@@ -10,6 +10,7 @@ type Controller struct {
 func (c *Controller) processInput() {
 	view := c.view
 
+	// don't block if there are no events to handle
 	if !view.screen.HasPendingEvent() {
 		return
 	}
@@ -26,9 +27,7 @@ func (c *Controller) processInput() {
 			view.quit()
 		} else if ev.Key() == tcell.KeyCtrlL {
 			view.screen.Sync()
-		} else if ev.Rune() == 'C' || ev.Rune() == 'c' {
-			view.screen.Clear()
-		} else if ev.Rune() == 'R' || ev.Rune() == 'r' {
+		} else if ev.Rune() == ' ' {
 			c.view.running = !c.view.running
 		}
 	case *tcell.EventMouse:
