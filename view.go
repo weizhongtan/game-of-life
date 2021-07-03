@@ -60,6 +60,14 @@ func (v *View) drawText(x1, y1, x2, y2 int, text string) {
 	}
 }
 
+func (v *View) drawTextLine(line int, text string) {
+	w := (GridMaxCols * 2) + 2
+	// %-*s explained:
+	// "-" right justify
+	// "*" pass width in
+	v.drawText(0, line, w, line+1, fmt.Sprintf("%-*s", w, text))
+}
+
 func (v *View) drawBox(x1, y1, x2, y2 int) {
 	if y2 < y1 {
 		y1, y2 = y2, y1
@@ -109,6 +117,16 @@ func (v *View) toggleCell(x, y int) {
 	v.grid.toggleCell(x, y)
 }
 
+func wrap(val, min, max int) int {
+	if val < min {
+		return max
+	}
+	if val > max {
+		return min
+	}
+	return val
+}
+
 func (v *View) update() {
 	if v.running {
 		g := *v.grid
@@ -123,10 +141,10 @@ func (v *View) update() {
 				// check neighbors
 				for a := i - 1; a <= i+1; a++ {
 					for b := j - 1; b <= j+1; b++ {
-						if a >= 0 && a < GridMaxCols && b >= 0 && b < GridMaxRows {
-							if g[a][b] == GridCellAlive {
-								count++
-							}
+						// wrap around the matrix
+						aWrap, bWrap := wrap(a, 0, GridMaxCols-1), wrap(b, 0, GridMaxCols-1)
+						if g[aWrap][bWrap] == GridCellAlive {
+							count++
 						}
 					}
 				}
@@ -173,21 +191,19 @@ func (v *View) render() {
 		}
 	}
 	// draw game status
-	var runningMsg string
+	var toggleMsg string
 	if v.running {
-		runningMsg = "running"
+		toggleMsg = "pause"
 	} else {
-		runningMsg = "paused"
+		toggleMsg = "run"
 	}
 	lines := []string{
-		"Controls:",
 		"[left click] add cell",
-		"[r] toggle simulation",
-		"[esc] exit",
-		fmt.Sprintf("simulation: %s", runningMsg),
+		fmt.Sprintf("[r]          %s simulation", toggleMsg),
+		"[esc]        exit",
 	}
 	for i, msg := range lines {
-		v.drawText(0, i+GridMaxRows+2, (GridMaxCols*2 + 2), i+GridMaxRows+2, msg)
+		v.drawTextLine(GridMaxRows+2+i, msg)
 	}
 	// Update screen
 	v.screen.Show()
