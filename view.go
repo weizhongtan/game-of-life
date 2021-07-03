@@ -61,7 +61,6 @@ func (v *View) drawText(x1, y1, x2, y2 int, text string) {
 }
 
 func (v *View) drawBox(x1, y1, x2, y2 int) {
-	style := tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(tcell.ColorPurple)
 	if y2 < y1 {
 		y1, y2 = y2, y1
 	}
@@ -69,12 +68,23 @@ func (v *View) drawBox(x1, y1, x2, y2 int) {
 		x1, x2 = x2, x1
 	}
 
+	var style tcell.Style
 	// Fill background
 	for row := y1; row <= y2; row++ {
 		for col := x1; col <= x2; col++ {
+			// checkerboard pattern
+			var color tcell.Color
+			if row%2^((col+1)/2)%2 == 0 {
+				color = tcell.ColorSlateGray
+			} else {
+				color = tcell.ColorDarkSlateGray
+			}
+			style = tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(color)
 			v.screen.SetContent(col, row, ' ', nil, style)
 		}
 	}
+
+	style = tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(tcell.ColorReset)
 
 	// Draw borders
 	for col := x1; col <= x2; col++ {
