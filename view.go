@@ -214,7 +214,7 @@ func (v *View) render() {
 	lines := []string{
 		"[left click] toggle cell",
 		fmt.Sprintf("[space]      %s simulation", toggleMsg),
-		"[esc]        exit",
+		"[esc/q]      exit",
 	}
 	for i, msg := range lines {
 		v.drawTextLine(g.height()+2+i, msg)

@@ -23,7 +23,7 @@ func (c *Controller) processInput() {
 	case *tcell.EventResize:
 		view.sync()
 	case *tcell.EventKey:
-		if ev.Key() == tcell.KeyEscape || ev.Key() == tcell.KeyCtrlC {
+		if ev.Key() == tcell.KeyEscape || ev.Key() == tcell.KeyCtrlC || ev.Rune() == 'q' || ev.Rune() == 'Q' {
 			view.quit()
 		} else if ev.Key() == tcell.KeyCtrlL {
 			view.screen.Sync()
