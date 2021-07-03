@@ -93,12 +93,11 @@ func (v *View) drawBox(x1, y1, x2, y2 int) {
 }
 
 func (v *View) drawCell(x, y int) {
-	if x < GridMaxCols*2 && y < GridMaxRows {
-		// round to nearest even value, then scale down to grid size
-		x2 := (x - (x % 2)) / 2
-		g := *v.grid
-		g[x2][y] = GridCellAlive
-	}
+	v.grid.drawCell(x, y)
+}
+
+func (v *View) update() {
+
 }
 
 func (v *View) render() {

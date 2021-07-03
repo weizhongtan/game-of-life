@@ -21,3 +21,11 @@ func NewGrid() *Grid {
 	}
 	return &grid
 }
+
+func (g *Grid) drawCell(x, y int) {
+	if x < GridMaxCols*2 && y < GridMaxRows {
+		// round to nearest even value, then scale down to grid size
+		x2 := (x - (x % 2)) / 2
+		(*g)[x2][y] = GridCellAlive
+	}
+}

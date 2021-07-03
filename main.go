@@ -9,6 +9,7 @@ func main() {
 		controller.processInput()
 
 		// update
+		view.update()
 
 		// convert grid into setContent calls
 		view.render()
