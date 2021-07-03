@@ -25,7 +25,7 @@ func (c *Controller) processInput() {
 		} else if ev.Rune() == 'C' || ev.Rune() == 'c' {
 			view.screen.Clear()
 		} else if ev.Rune() == 'R' || ev.Rune() == 'r' {
-			c.view.running = true
+			c.view.running = !c.view.running
 		}
 	case *tcell.EventMouse:
 		x, y := ev.Position()

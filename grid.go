@@ -4,8 +4,8 @@ package main
 type Grid [][]int
 
 const (
-	GridMaxCols   = 15
-	GridMaxRows   = 15
+	GridMaxCols   = 25
+	GridMaxRows   = 25
 	GridCellAlive = 1
 	GridCellDead  = 0
 )

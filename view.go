@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -43,7 +44,8 @@ func (v *View) sync() {
 	v.screen.Sync()
 }
 
-func (v *View) drawText(x1, y1, x2, y2 int, style tcell.Style, text string) {
+func (v *View) drawText(x1, y1, x2, y2 int, text string) {
+	style := tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(tcell.ColorReset)
 	row, col := y1, x1
 	for _, r := range text {
 		v.screen.SetContent(col, row, r, nil, style)
@@ -99,7 +101,45 @@ func (v *View) drawCell(x, y int) {
 
 func (v *View) update() {
 	if v.running {
-		(*v.grid)[0][0] = GridCellDead
+		g := *v.grid
+
+		// nb represents the number of neighbors for each position in the grid
+		nb := *NewGrid()
+
+		// count the neighbors for each position in the grid
+		for i := 0; i < len(g); i++ {
+			for j, col := 0, g[i]; j < len(col); j++ {
+				count := 0
+				// check neighbors
+				for a := i - 1; a <= i+1; a++ {
+					for b := j - 1; b <= j+1; b++ {
+						if a >= 0 && a < GridMaxCols && b >= 0 && b < GridMaxRows {
+							if g[a][b] == GridCellAlive {
+								count++
+							}
+						}
+					}
+				}
+				nb[i][j] = count
+			}
+		}
+
+		// calculate next generation and store in nb
+		for i := 0; i < len(g); i++ {
+			for j, col := 0, g[i]; j < len(col); j++ {
+				count := nb[i][j]
+
+				// if the count of neighbors including self is 3
+				//   or
+				// the count of neighbors including self is 4 and self is alive
+				//   -> next generation cell position is alive
+				if count == 3 || (count == 4 && g[i][j] == GridCellAlive) {
+					g[i][j] = GridCellAlive
+				} else {
+					g[i][j] = GridCellDead
+				}
+			}
+		}
 	}
 }
 
@@ -121,6 +161,23 @@ func (v *View) render() {
 				v.screen.SetContent(x+1, y, tcell.RuneBlock, nil, style)
 			}
 		}
+	}
+	// draw game status
+	var runningMsg string
+	if v.running {
+		runningMsg = "running"
+	} else {
+		runningMsg = "paused"
+	}
+	lines := []string{
+		"Controls:",
+		"[left click] add cell",
+		"[r] toggle simulation",
+		"[esc] exit",
+		fmt.Sprintf("simulation: %s", runningMsg),
+	}
+	for i, msg := range lines {
+		v.drawText(0, i+GridMaxRows+2, (GridMaxCols*2 + 2), i+GridMaxRows+2, msg)
 	}
 	// Update screen
 	v.screen.Show()
