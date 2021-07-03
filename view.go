@@ -120,4 +120,6 @@ func (v *View) render() {
 			}
 		}
 	}
+	// Update screen
+	v.screen.Show()
 }

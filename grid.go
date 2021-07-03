@@ -7,7 +7,7 @@ const (
 	GridMaxCols   = 15
 	GridMaxRows   = 15
 	GridCellAlive = 1
-	CellDead      = 0
+	GridCellDead  = 0
 )
 
 func NewGrid() *Grid {
