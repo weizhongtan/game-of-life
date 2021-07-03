@@ -105,8 +105,8 @@ func (v *View) drawBox(x1, y1, x2, y2 int) {
 	}
 }
 
-func (v *View) drawCell(x, y int) {
-	v.grid.drawCell(x, y)
+func (v *View) toggleCell(x, y int) {
+	v.grid.toggleCell(x, y)
 }
 
 func (v *View) update() {

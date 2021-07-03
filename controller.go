@@ -41,7 +41,7 @@ func (c *Controller) processInput() {
 		case tcell.ButtonNone:
 			if c.buttonDown {
 				// offset to account for borders
-				view.drawCell(x-1, y-1)
+				view.toggleCell(x-1, y-1)
 				c.buttonDown = false
 			}
 		default:

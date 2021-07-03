@@ -22,10 +22,15 @@ func NewGrid() *Grid {
 	return &grid
 }
 
-func (g *Grid) drawCell(x, y int) {
+func (g Grid) toggleCell(x, y int) {
 	if x >= 0 && x < GridMaxCols*2 && y >= 0 && y < GridMaxRows {
 		// round to nearest even value, then scale down to grid size
 		x2 := (x - (x % 2)) / 2
-		(*g)[x2][y] = GridCellAlive
+		val := g[x2][y]
+		if val == GridCellDead {
+			g[x2][y] = GridCellAlive
+		} else {
+			g[x2][y] = GridCellDead
+		}
 	}
 }
