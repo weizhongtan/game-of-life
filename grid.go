@@ -8,7 +8,7 @@ const (
 	GridCellDead  = 0
 )
 
-func NewGrid(width, height int) *Grid {
+func NewGrid(width, height int) Grid {
 	grid := Grid{}
 	for i := 0; i < width; i++ {
 		row := []int{}
@@ -17,27 +17,26 @@ func NewGrid(width, height int) *Grid {
 		}
 		grid = append(grid, row)
 	}
-	return &grid
+	return grid
 }
 
-func (g *Grid) toggleCell(x, y int) {
-	grid := *g
-	if x >= 0 && x < grid.width()*2 && y >= 0 && y < grid.height() {
+func (g Grid) toggleCell(x, y int) {
+	if x >= 0 && x < g.width()*2 && y >= 0 && y < g.height() {
 		// round to nearest even value, then scale down to grid size
 		x2 := (x - (x % 2)) / 2
-		val := grid[x2][y]
+		val := g[x2][y]
 		if val == GridCellDead {
-			grid[x2][y] = GridCellAlive
+			g[x2][y] = GridCellAlive
 		} else {
-			grid[x2][y] = GridCellDead
+			g[x2][y] = GridCellDead
 		}
 	}
 }
 
-func (g *Grid) width() int {
-	return len(*g)
+func (g Grid) width() int {
+	return len(g)
 }
 
-func (g *Grid) height() int {
-	return len((*g)[0])
+func (g Grid) height() int {
+	return len((g)[0])
 }

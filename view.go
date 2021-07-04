@@ -10,7 +10,7 @@ import (
 
 type View struct {
 	screen  tcell.Screen
-	grid    *Grid
+	grid    Grid
 	running bool
 }
 
@@ -136,19 +136,19 @@ func wrap(val, min, max int) int {
 
 func (v *View) update() {
 	if v.running {
-		g := *v.grid
-		nextGen := *NewGrid(g.width(), g.height())
+		currGen := v.grid
+		nextGen := NewGrid(currGen.width(), currGen.height())
 
 		// count the neighbours for each position in the grid
-		for i := 0; i < len(g); i++ {
-			for j, col := 0, g[i]; j < len(col); j++ {
+		for i := 0; i < len(currGen); i++ {
+			for j, col := 0, currGen[i]; j < len(col); j++ {
 				count := 0
 				// check all 9 neighbours including self
 				for a := i - 1; a <= i+1; a++ {
 					for b := j - 1; b <= j+1; b++ {
 						// wrap around the matrix
-						aWrap, bWrap := wrap(a, 0, g.width()-1), wrap(b, 0, g.height()-1)
-						if g[aWrap][bWrap] == GridCellAlive {
+						aWrap, bWrap := wrap(a, 0, currGen.width()-1), wrap(b, 0, currGen.height()-1)
+						if currGen[aWrap][bWrap] == GridCellAlive {
 							count++
 						}
 					}
@@ -157,7 +157,7 @@ func (v *View) update() {
 				//   or
 				// the count of neighbours including self is 4 and self is alive
 				//   -> next generation cell position is alive
-				if count == 3 || (count == 4 && g[i][j] == GridCellAlive) {
+				if count == 3 || (count == 4 && currGen[i][j] == GridCellAlive) {
 					nextGen[i][j] = GridCellAlive
 				} else {
 					nextGen[i][j] = GridCellDead
@@ -165,7 +165,7 @@ func (v *View) update() {
 			}
 		}
 
-		v.grid = &nextGen
+		v.grid = nextGen
 	}
 }
 
@@ -182,7 +182,7 @@ func (v *View) render() {
 	v.drawBox(0, 0, v.grid.width()*2+1, v.grid.height()+1, color)
 
 	// render grid within outer box
-	g := *v.grid
+	g := v.grid
 	for i := 0; i < len(g); i++ {
 		col := g[i]
 		for j := 0; j < len(col); j++ {
