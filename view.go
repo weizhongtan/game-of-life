@@ -66,6 +66,7 @@ func (v *View) drawText(x1, y1, x2, y2 int, text string) {
 	}
 }
 
+// drawTextLine draws a line of text at a given line number
 func (v *View) drawTextLine(line int, text string) {
 	w := (v.grid.width() * 2) + 2
 	// %-*s explained:
@@ -136,15 +137,13 @@ func wrap(val, min, max int) int {
 func (v *View) update() {
 	if v.running {
 		g := *v.grid
+		nextGen := *NewGrid(g.width(), g.height())
 
-		// nb represents the number of neighbors for each position in the grid
-		nb := *NewGrid(g.width(), g.height())
-
-		// count the neighbors for each position in the grid
+		// count the neighbours for each position in the grid
 		for i := 0; i < len(g); i++ {
 			for j, col := 0, g[i]; j < len(col); j++ {
 				count := 0
-				// check neighbors
+				// check all 9 neighbours including self
 				for a := i - 1; a <= i+1; a++ {
 					for b := j - 1; b <= j+1; b++ {
 						// wrap around the matrix
@@ -154,26 +153,19 @@ func (v *View) update() {
 						}
 					}
 				}
-				nb[i][j] = count
-			}
-		}
-
-		// calculate next generation and store in nb
-		for i := 0; i < len(g); i++ {
-			for j, col := 0, g[i]; j < len(col); j++ {
-				count := nb[i][j]
-
-				// if the count of neighbors including self is 3
+				// if the count of neighbours including self is 3
 				//   or
-				// the count of neighbors including self is 4 and self is alive
+				// the count of neighbours including self is 4 and self is alive
 				//   -> next generation cell position is alive
 				if count == 3 || (count == 4 && g[i][j] == GridCellAlive) {
-					g[i][j] = GridCellAlive
+					nextGen[i][j] = GridCellAlive
 				} else {
-					g[i][j] = GridCellDead
+					nextGen[i][j] = GridCellDead
 				}
 			}
 		}
+
+		v.grid = &nextGen
 	}
 }
 

@@ -20,23 +20,24 @@ func NewGrid(width, height int) *Grid {
 	return &grid
 }
 
-func (g Grid) toggleCell(x, y int) {
-	if x >= 0 && x < g.width()*2 && y >= 0 && y < g.height() {
+func (g *Grid) toggleCell(x, y int) {
+	grid := *g
+	if x >= 0 && x < grid.width()*2 && y >= 0 && y < grid.height() {
 		// round to nearest even value, then scale down to grid size
 		x2 := (x - (x % 2)) / 2
-		val := g[x2][y]
+		val := grid[x2][y]
 		if val == GridCellDead {
-			g[x2][y] = GridCellAlive
+			grid[x2][y] = GridCellAlive
 		} else {
-			g[x2][y] = GridCellDead
+			grid[x2][y] = GridCellDead
 		}
 	}
 }
 
-func (g Grid) width() int {
-	return len(g)
+func (g *Grid) width() int {
+	return len(*g)
 }
 
-func (g Grid) height() int {
-	return len(g[0])
+func (g *Grid) height() int {
+	return len((*g)[0])
 }
