@@ -8,9 +8,25 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
+func getUI(isRunning bool) []string {
+	var toggleMsg string
+	if isRunning {
+		toggleMsg = "pause"
+	} else {
+		toggleMsg = "run"
+	}
+	lines := []string{
+		"[left click] toggle cell",
+		fmt.Sprintf("[space]      %s simulation", toggleMsg),
+		"[r]          reset",
+		"[esc/q]      exit",
+	}
+	return lines
+}
+
 type View struct {
 	screen  tcell.Screen
-	grid    Grid
+	currGen Grid
 	running bool
 }
 
@@ -34,7 +50,7 @@ func NewView() *View {
 	// width - box left + right borders
 	// height - box top + bottom borders + controls UI
 	sw, sh := s.Size()
-	w, h := (sw/2)-1, sh-(2+3)
+	w, h := (sw/2)-1, sh-(2+len(getUI(false)))
 
 	g := NewGrid(w, h)
 	v := View{s, g, false}
@@ -68,7 +84,7 @@ func (v *View) drawText(x1, y1, x2, y2 int, text string) {
 
 // drawTextLine draws a line of text at a given line number
 func (v *View) drawTextLine(line int, text string) {
-	w := (v.grid.width() * 2) + 2
+	w := (v.currGen.width() * 2) + 2
 	// %-*s explained:
 	// "-" right justify
 	// "*" pass width in
@@ -121,7 +137,7 @@ func (v *View) drawBox(x1, y1, x2, y2 int, color tcell.Color) {
 }
 
 func (v *View) toggleCell(x, y int) {
-	v.grid.toggleCell(x, y)
+	v.currGen.toggleCell(x, y)
 }
 
 func wrap(val, min, max int) int {
@@ -136,7 +152,7 @@ func wrap(val, min, max int) int {
 
 func (v *View) update() {
 	if v.running {
-		currGen := v.grid
+		currGen := v.currGen
 		nextGen := NewGrid(currGen.width(), currGen.height())
 
 		// count the neighbours for each position in the grid
@@ -165,8 +181,12 @@ func (v *View) update() {
 			}
 		}
 
-		v.grid = nextGen
+		v.currGen = nextGen
 	}
+}
+
+func (v *View) reset() {
+	v.currGen = NewGrid(v.currGen.width(), v.currGen.height())
 }
 
 func (v *View) render() {
@@ -179,10 +199,10 @@ func (v *View) render() {
 	} else {
 		color = tcell.ColorWhite
 	}
-	v.drawBox(0, 0, v.grid.width()*2+1, v.grid.height()+1, color)
+	v.drawBox(0, 0, v.currGen.width()*2+1, v.currGen.height()+1, color)
 
 	// render grid within outer box
-	g := v.grid
+	g := v.currGen
 	for i := 0; i < len(g); i++ {
 		col := g[i]
 		for j := 0; j < len(col); j++ {
@@ -197,17 +217,7 @@ func (v *View) render() {
 		}
 	}
 	// draw game status
-	var toggleMsg string
-	if v.running {
-		toggleMsg = "pause"
-	} else {
-		toggleMsg = "run"
-	}
-	lines := []string{
-		"[left click] toggle cell",
-		fmt.Sprintf("[space]      %s simulation", toggleMsg),
-		"[esc/q]      exit",
-	}
+	lines := getUI(v.running)
 	for i, msg := range lines {
 		v.drawTextLine(g.height()+2+i, msg)
 	}

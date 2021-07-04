@@ -9,13 +9,9 @@ const (
 )
 
 func NewGrid(width, height int) Grid {
-	grid := Grid{}
-	for i := 0; i < width; i++ {
-		row := []int{}
-		for j := 0; j < height; j++ {
-			row = append(row, 0)
-		}
-		grid = append(grid, row)
+	grid := make(Grid, width)
+	for i := range grid {
+		grid[i] = make([]int, height)
 	}
 	return grid
 }

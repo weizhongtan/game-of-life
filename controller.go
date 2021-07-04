@@ -27,8 +27,10 @@ func (c *Controller) processInput() {
 			view.quit()
 		} else if ev.Key() == tcell.KeyCtrlL {
 			view.screen.Sync()
+		} else if ev.Rune() == 'r' || ev.Rune() == 'R' {
+			view.reset()
 		} else if ev.Rune() == ' ' {
-			c.view.running = !c.view.running
+			view.running = !c.view.running
 		}
 	case *tcell.EventMouse:
 		x, y := ev.Position()
